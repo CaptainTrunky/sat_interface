@@ -3,4 +3,8 @@ lib/*
 obj/*
 build/*
 vendor/*
+tests/bin/*
+
 *.swp
+*.swo
+*.swn

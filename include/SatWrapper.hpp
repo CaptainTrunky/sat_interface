@@ -1,6 +1,8 @@
 #ifndef SAT_WRAPPER_HPP
 #define SAT_WRAPPER_HPP
 
+#include "Journal.hpp"
+
 #include <vector>
 #include <memory>
 
@@ -8,47 +10,102 @@
 
 class SatWrapper {
   public:
-    using Literal = int;
+    using Var = Glucose::Var;
+    using Literal = Glucose::Lit;
     using Clause = std::vector<Literal>;
     using ClauseConst = const Clause;
-    using SolverT = Glucose::Solver;
+    using Solver = Glucose::Solver;
 
-    SatWrapper ();
-
-    SatWrapper (const SolverT& s) : m_sat(s) {
+    SatWrapper () {
+      m_sat = new Solver();
     }
 
-    ~SatWrapper () {}
+    SatWrapper (Solver* s) {
+      m_sat = s;
+    }
 
-    void not_clause (ClauseConst& c);
-    void and_clause (ClauseConst& c);
-    void or_clause (ClauseConst& c);
-    void nand_clause (ClauseConst& c);
-    void nor_clause (ClauseConst& c);
-    void xor_clause (ClauseConst& c);
-    void xnor_clause (ClauseConst& c);
+    ~SatWrapper () {
+      delete m_sat;
+    }
 
-    void cardinality_clause (ClauseConst& c,
+    Var not_clause (ClauseConst& c);
+    Var and_clause (ClauseConst& c);
+    Var or_clause (ClauseConst& c);
+    Var nand_clause (ClauseConst& c);
+    Var nor_clause (ClauseConst& c);
+    Var xor_clause (ClauseConst& c);
+    Var xnor_clause (ClauseConst& c);
+
+    Var cardinality_clause (ClauseConst& c,
       const size_t lower,
       const size_t upper
-      );
+    );
 
-    void simplify();
-    void solve();
+    Var get_new_var () {
+      return get_solver()->newVar();
+    }
 
-    void get_model() const {
+    Literal negate (const Literal& l) const {
+      return ~l;
+    }
+
+    Literal get_literal (Var v, bool sign = false) const {
+      return Glucose::mkLit(v, sign);
+    }
+
+    Var get_var (const Literal& l) {
+      return Glucose::var(l);
+    }
+
+    void add_literal(const Literal& l) {
+      get_solver()->addClause(l);
+    }
+
+    void add_clause (const Clause& c) {
+      Vec v(c.size());
+      _get_vec_from_clause(c, v);
+      get_solver()->addClause(v);
+    }
+
+    void simplify () {
+      m_sat->simplify();
+    }
+
+    bool solve () {
+      return m_sat->solve();
+    }
+
+    bool solve (const Literal& asmp) {
+      return m_sat->solve(asmp);
+    }
+
+    void get_model () const {
 
     }
 
-    void get_lit (const size_t idx) {
+    void get_var_value_from_model (const size_t idx) {
 
     }
 
-    const SolverT& get_solver() {
+    Solver* get_solver () {
+      return m_sat;
+    }
+
+    const Solver* get_solver () const {
       return m_sat;
     }
 
   private:
-    SolverT m_sat;
+    using Vec = Glucose::vec<Literal>;
+
+    Solver* m_sat;
+
+    void _get_vec_from_clause (const Clause& c, Vec& v) const {
+      ASSERT(v.size() == c.size(), "Must be equal");
+
+      for (size_t idx = 0; idx < c.size(); ++idx) {
+        v[idx] = c[idx];
+      }
+    }
 };
 #endif // SAT_WRAPPER_HPP

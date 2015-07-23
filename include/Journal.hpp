@@ -1,8 +1,9 @@
 #include <cassert>
+#include <iostream>
 
 #ifndef NDEBUG
   #define ASSERT(expr, msg) { \
-    if (!expr) {              \
+    if (!(expr)) {              \
       std::cout << msg;       \
       assert(false);          \
     }                         \
