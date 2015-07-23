@@ -89,8 +89,53 @@ SatWrapper::nor_clause (ClauseConst& c) {
 
 SatWrapper::Var
 SatWrapper::xor_clause (ClauseConst& c) {
-  ASSERT(false, "Not implemented");
-  return -1;
+  ASSERT(c.size() == 2, "Must contain 2 elements, use XOR ith gate literals to deal with set of variables");
+
+  const auto gate = get_new_var();
+
+  const auto& gate_literal = get_literal(gate);
+  const auto& not_gate_literal = negate(gate_literal);
+
+  const auto& l1 = c.front();
+  const auto& l2 = c.back();
+
+  const auto& neg_l1 = negate(l1);
+  const auto& neg_l2 = negate(l2);
+
+  Clause tmp;
+  tmp.reserve(3);
+
+  tmp.push_back(not_gate_literal);
+  tmp.push_back(l1);
+  tmp.push_back(l2);
+
+  add_clause(tmp);
+
+  tmp.clear();
+
+  tmp.push_back(not_gate_literal);
+  tmp.push_back(neg_l1);
+  tmp.push_back(neg_l2);
+
+  add_clause(tmp);
+
+  tmp.clear();
+
+  tmp.push_back(gate_literal);
+  tmp.push_back(l1);
+  tmp.push_back(neg_l2);
+
+  add_clause(tmp);
+
+  tmp.clear();
+
+  tmp.push_back(gate_literal);
+  tmp.push_back(neg_l1);
+  tmp.push_back(l2);
+
+  add_clause(tmp);
+
+  return gate;
 }
 
 SatWrapper::Var

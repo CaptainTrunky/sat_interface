@@ -95,6 +95,10 @@ class SatWrapper {
       return m_sat;
     }
 
+    void write_dimacs (const std::string& filename) {
+      get_solver()->toDimacs(filename.c_str());
+    }
+
   private:
     using Vec = Glucose::vec<Literal>;
 
