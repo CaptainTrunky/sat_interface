@@ -3,8 +3,9 @@
 
 #include "Journal.hpp"
 
-#include <vector>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include <core/Solver.h>
 
@@ -15,6 +16,8 @@ class SatWrapper {
     using Clause = std::vector<Literal>;
     using ClauseConst = const Clause;
     using Solver = Glucose::Solver;
+    // Sums, overflow
+    using PartialSum = std::pair<SatWrapper::Clause, SatWrapper::Literal>;
 
     SatWrapper () {
       m_sat = new Solver();
@@ -111,5 +114,16 @@ class SatWrapper {
         v[idx] = c[idx];
       }
     }
+
+    Var _sequential_counter (
+      ClauseConst& c,
+      const size_t lower,
+      const size_t upper
+    );
+
+    PartialSum _partialSum (
+      const Literal& l,
+      ClauseConst& sums
+    );
 };
 #endif // SAT_WRAPPER_HPP

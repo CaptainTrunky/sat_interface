@@ -170,31 +170,173 @@ TEST(TseitinPrimitives, XorOpUnsat) {
   EXPECT_EQ(false, is_sat);
 }
 
-TEST(TseitinPrimitives, NandOp) {
-  const int a = 1;
-  const int b = 2;
+TEST(TseitinPrimitives, NandOpSat) {
+  SatWrapper sat;
 
-  const auto is_sat = 0;
-  EXPECT_EQ(is_sat, a+b);
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
+
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+
+  sat.add_literal(sat.negate(l1));
+  sat.add_literal(sat.negate(l2));
+
+  const auto& nand_gate = sat.nand_clause(c);
+
+  const auto& nand_gate_on = sat.get_literal(nand_gate);
+
+  const auto is_sat = sat.solve(nand_gate_on);
+
+  EXPECT_EQ(true, is_sat);
+}
+
+TEST(TseitinPrimitives, NandOpUnsat) {
+  SatWrapper sat;
+
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
+
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+
+  sat.add_literal(l1);
+  sat.add_literal(l2);
+
+  const auto& nand_gate = sat.nand_clause(c);
+
+  const auto& nand_gate_on = sat.get_literal(nand_gate);
+
+  const auto is_sat = sat.solve(nand_gate_on);
+
+  EXPECT_EQ(false, is_sat);
 }
 
 
-TEST(TseitinPrimitives, NorOp) {
-  const int a = 1;
-  const int b = 2;
+TEST(TseitinPrimitives, NorOpSat) {
+  SatWrapper sat;
 
-  const auto is_sat = 0;
-  EXPECT_EQ(is_sat, a+b);
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
+
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(sat.negate(l1));
+  c.push_back(sat.negate(l2));
+
+  sat.add_literal(l1);
+  sat.add_literal(l2);
+
+  const auto& nor_gate = sat.nor_clause(c);
+
+  const auto& nor_gate_on = sat.get_literal(nor_gate);
+
+  const auto is_sat = sat.solve(nor_gate_on);
+
+  EXPECT_EQ(true, is_sat);
 }
 
+TEST(TseitinPrimitives, NorOpUnsat) {
+  SatWrapper sat;
 
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
 
-TEST(TseitinPrimitives, XnorOp) {
-  const int a = 1;
-  const int b = 2;
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
 
-  const auto is_sat = 0;
-  EXPECT_EQ(is_sat, a+b);
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+
+  sat.add_literal(l1);
+  sat.add_literal(l2);
+
+  const auto& nor_gate = sat.nor_clause(c);
+
+  const auto& nor_gate_on = sat.get_literal(nor_gate);
+
+  const auto is_sat = sat.solve(nor_gate_on);
+
+  EXPECT_EQ(false, is_sat);
+}
+
+TEST(TseitinPrimitives, XnorOpSat) {
+  SatWrapper sat;
+
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
+
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+
+  sat.add_literal(l1);
+  sat.add_literal(l2);
+
+  const auto& xnor_gate = sat.xnor_clause(c);
+
+  const auto& xnor_gate_on = sat.get_literal(xnor_gate);
+
+  const auto is_sat = sat.solve(xnor_gate_on);
+
+  EXPECT_EQ(true, is_sat);
+}
+
+TEST(TseitinPrimitives, XnorOpUnsat) {
+  SatWrapper sat;
+
+  const auto inp1 = sat.get_new_var();
+  const auto inp2 = sat.get_new_var();
+
+  const auto& l1 = sat.get_literal (inp1);
+  const auto& l2 = sat.get_literal (inp2);
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(sat.negate(l1));
+  c.push_back(l2);
+
+  sat.add_literal(l1);
+  sat.add_literal(l2);
+
+  const auto& xnor_gate = sat.xnor_clause(c);
+
+  const auto& xnor_gate_on = sat.get_literal(xnor_gate);
+
+  const auto is_sat = sat.solve(xnor_gate_on);
+
+  EXPECT_EQ(false, is_sat);
 }
 
 int
