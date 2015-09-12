@@ -2,14 +2,37 @@
 
 #include <gtest/gtest.h>
 
+TEST (Basic, AddClause) {
+  SatWrapper sat;
+
+  const auto inp1 = sat.get_new_var ();
+  const auto inp2 = sat.get_new_var ();
+  const auto inp3 = sat.get_new_var ();
+  const auto inp4 = sat.get_new_var ();
+
+  SatWrapper::Clause c;
+  c.push_back (inp1);
+  c.push_back (inp2);
+
+  sat.add_clause (c);
+
+  EXPECT_EQ (1, sat.get_solver()->nClauses());
+
+  c.clear();
+  c.push_back (sat.negate(inp1));
+  c.push_back (inp4);
+
+  sat.add_clause (c);
+  EXPECT_EQ (2, sat.get_solver()->nClauses());
+
+  EXPECT_EQ (5, sat.get_solver()->nVars());
+}
+
 TEST(TseitinPrimitives, AndOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -27,27 +50,24 @@ TEST(TseitinPrimitives, AndOpSat) {
 
   const auto is_sat = sat.solve(and_gate_on);
 
-  EXPECT_EQ(true, is_sat);
+  EXPECT_EQ (true, is_sat);
 }
 
 TEST(TseitinPrimitives, AndOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
-  c.reserve(2);
+  c.reserve (2);
 
-  c.push_back(l1);
-  c.push_back(l2);
+  c.push_back (l1);
+  c.push_back (l2);
 
-  sat.add_literal(sat.negate(l1));
-  sat.add_literal(l2);
+  sat.add_literal (sat.negate(l1));
+  sat.add_literal (l2);
 
   const auto& and_gate = sat.and_clause(c);
 
@@ -61,11 +81,8 @@ TEST(TseitinPrimitives, AndOpUnsat) {
 TEST(TseitinPrimitives, OrOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -89,11 +106,8 @@ TEST(TseitinPrimitives, OrOpSat) {
 TEST(TseitinPrimitives, OrOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -117,11 +131,8 @@ TEST(TseitinPrimitives, OrOpUnsat) {
 TEST(TseitinPrimitives, XorOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -145,11 +156,8 @@ TEST(TseitinPrimitives, XorOpSat) {
 TEST(TseitinPrimitives, XorOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -173,11 +181,8 @@ TEST(TseitinPrimitives, XorOpUnsat) {
 TEST(TseitinPrimitives, NandOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -201,11 +206,8 @@ TEST(TseitinPrimitives, NandOpSat) {
 TEST(TseitinPrimitives, NandOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -226,15 +228,11 @@ TEST(TseitinPrimitives, NandOpUnsat) {
   EXPECT_EQ(false, is_sat);
 }
 
-
 TEST(TseitinPrimitives, NorOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -258,11 +256,8 @@ TEST(TseitinPrimitives, NorOpSat) {
 TEST(TseitinPrimitives, NorOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -286,11 +281,8 @@ TEST(TseitinPrimitives, NorOpUnsat) {
 TEST(TseitinPrimitives, XnorOpSat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 
@@ -311,14 +303,11 @@ TEST(TseitinPrimitives, XnorOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(TseitinPrimitives, XnorOpUnsat) {
+TEST(Tseitlrimitives, XnorOpUnsat) {
   SatWrapper sat;
 
-  const auto inp1 = sat.get_new_var();
-  const auto inp2 = sat.get_new_var();
-
-  const auto& l1 = sat.get_literal (inp1);
-  const auto& l2 = sat.get_literal (inp2);
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
 
   SatWrapper::Clause c;
 

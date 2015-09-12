@@ -6,37 +6,34 @@ SatWrapper::Var
 SatWrapper::not_clause (ClauseConst& c) {
   ASSERT (c.size() == 1, "Must contain one literal");
 
-  Clause neg;
-  neg.push_back(~c.front());
+  const auto& neg = negate (get_literal (c.front ()));
 
-  add_clause(neg);
+  add_literal (neg);
 
-  return get_var(c.front());
+  return negate (c.front());
 }
 
 SatWrapper::Var
 SatWrapper::and_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto gate_literal = get_literal (gate);
-
   Clause base;
   base.reserve(c.size() + 1);
 
-  base.push_back(gate_literal);
+  base.push_back(gate);
   for (const auto& l: c) {
     base.push_back(negate(l));
   }
 
   add_clause(base);
 
-  const auto neg_gate_literal = negate(gate_literal);
+  const auto neg_gate = negate (gate);
 
   Clause tail;
   for (const auto& l: c) {
     tail.reserve(2);
 
-    tail.push_back(neg_gate_literal);
+    tail.push_back(neg_gate);
     tail.push_back(l);
 
     add_clause (tail);
@@ -50,13 +47,12 @@ SatWrapper::Var
 SatWrapper::or_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto gate_literal = get_literal (gate);
-  const auto neg_gate_literal = negate(gate_literal);
+  const auto neg_gate = negate(gate);
 
   Clause base;
   base.reserve(c.size() + 1);
 
-  base.push_back(neg_gate_literal);
+  base.push_back(neg_gate);
   for (const auto& l: c) {
     base.push_back(l);
   }
@@ -67,7 +63,7 @@ SatWrapper::or_clause (ClauseConst& c) {
   for (const auto& l: c) {
     tail.reserve(2);
 
-    tail.push_back(gate_literal);
+    tail.push_back(gate);
     tail.push_back(negate(l));
 
     add_clause (tail);
@@ -81,13 +77,12 @@ SatWrapper::Var
 SatWrapper::nand_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto gate_literal = get_literal (gate);
-  const auto neg_gate_literal = negate(gate_literal);
+  const auto neg_gate = negate(gate);
 
   Clause base;
   base.reserve(c.size() + 1);
 
-  base.push_back(neg_gate_literal);
+  base.push_back(neg_gate);
   for (const auto& l: c) {
     base.push_back(negate(l));
   }
@@ -98,7 +93,7 @@ SatWrapper::nand_clause (ClauseConst& c) {
   for (const auto& l: c) {
     tail.reserve(2);
 
-    tail.push_back(gate_literal);
+    tail.push_back(gate);
     tail.push_back(l);
 
     add_clause (tail);
@@ -106,20 +101,18 @@ SatWrapper::nand_clause (ClauseConst& c) {
     tail.clear();
   }
   return gate;
-
 }
 
 SatWrapper::Var
 SatWrapper::nor_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto gate_literal = get_literal (gate);
-  const auto neg_gate_literal = negate(gate_literal);
+  const auto neg_gate = negate(gate);
 
   Clause base;
   base.reserve(c.size() + 1);
 
-  base.push_back(gate_literal);
+  base.push_back(gate);
   for (const auto& l: c) {
     base.push_back(l);
   }
@@ -130,7 +123,7 @@ SatWrapper::nor_clause (ClauseConst& c) {
   for (const auto& l: c) {
     tail.reserve(2);
 
-    tail.push_back(neg_gate_literal);
+    tail.push_back(neg_gate);
     tail.push_back(negate(l));
 
     add_clause (tail);
@@ -146,8 +139,7 @@ SatWrapper::xor_clause (ClauseConst& c) {
 
   const auto gate = get_new_var();
 
-  const auto& gate_literal = get_literal(gate);
-  const auto& not_gate_literal = negate(gate_literal);
+  const auto& not_gate = negate(gate);
 
   const auto& l1 = c.front();
   const auto& l2 = c.back();
@@ -158,7 +150,7 @@ SatWrapper::xor_clause (ClauseConst& c) {
   Clause tmp;
   tmp.reserve(3);
 
-  tmp.push_back(not_gate_literal);
+  tmp.push_back(not_gate);
   tmp.push_back(l1);
   tmp.push_back(l2);
 
@@ -166,7 +158,7 @@ SatWrapper::xor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(not_gate_literal);
+  tmp.push_back(not_gate);
   tmp.push_back(neg_l1);
   tmp.push_back(neg_l2);
 
@@ -174,7 +166,7 @@ SatWrapper::xor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(gate_literal);
+  tmp.push_back(gate);
   tmp.push_back(l1);
   tmp.push_back(neg_l2);
 
@@ -182,7 +174,7 @@ SatWrapper::xor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(gate_literal);
+  tmp.push_back(gate);
   tmp.push_back(neg_l1);
   tmp.push_back(l2);
 
@@ -197,8 +189,7 @@ SatWrapper::xnor_clause (ClauseConst& c) {
 
   const auto gate = get_new_var();
 
-  const auto& gate_literal = get_literal(gate);
-  const auto& not_gate_literal = negate(gate_literal);
+  const auto& not_gate = negate(gate);
 
   const auto& l1 = c.front();
   const auto& l2 = c.back();
@@ -209,7 +200,7 @@ SatWrapper::xnor_clause (ClauseConst& c) {
   Clause tmp;
   tmp.reserve(3);
 
-  tmp.push_back(gate_literal);
+  tmp.push_back(gate);
   tmp.push_back(l1);
   tmp.push_back(l2);
 
@@ -217,7 +208,7 @@ SatWrapper::xnor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(gate_literal);
+  tmp.push_back(gate);
   tmp.push_back(neg_l1);
   tmp.push_back(neg_l2);
 
@@ -225,7 +216,7 @@ SatWrapper::xnor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(not_gate_literal);
+  tmp.push_back(not_gate);
   tmp.push_back(l1);
   tmp.push_back(neg_l2);
 
@@ -233,7 +224,7 @@ SatWrapper::xnor_clause (ClauseConst& c) {
 
   tmp.clear();
 
-  tmp.push_back(not_gate_literal);
+  tmp.push_back(not_gate);
   tmp.push_back(neg_l1);
   tmp.push_back(l2);
 
@@ -263,10 +254,9 @@ SatWrapper::_sequential_counter (ClauseConst& c,
 
   SatWrapper::Clause current_outs;
 
-  const auto tmp = get_new_var ();
-  const auto always_neg = get_literal (tmp);
-
-  std::fill (current_outs.begin(), current_outs.end(), always_neg);
+  const auto always_zero = get_new_var ();
+  const auto fake_sums = not_clause (SatWrapper::Clause (1,always_zero));
+  std::fill (current_outs.begin(), current_outs.end(), fake_sums);
 
   SatWrapper::Clause overflows;
   overflows.reserve (c.size());
@@ -299,7 +289,7 @@ SatWrapper::_sequential_counter (ClauseConst& c,
 
 SatWrapper::PartialSum
 SatWrapper::_partialSum (
-  const SatWrapper::Literal& l,
+  const SatWrapper::Var v,
   const SatWrapper::Clause& sums) {
   SatWrapper::Clause outs;
   outs.resize (sums.size());
@@ -309,10 +299,10 @@ SatWrapper::_partialSum (
 
   sum_1.reserve (2);
   sum_1.push_back (sums.front());
-  sum_1.push_back (l);
+  sum_1.push_back (v);
 
   const auto s_1 = or_clause (sum_1);
-  outs[0] = get_literal (s_1);
+  outs[0] = s_1;
 
   // All other sums
 
@@ -322,34 +312,31 @@ SatWrapper::_partialSum (
     SatWrapper::Clause a;
     a.reserve (2);
 
-    a.push_back (l);
+    a.push_back (v);
     a.push_back (sum_prev);
 
     const auto s = and_clause (a);
-
-    const auto s_lit = get_literal (s);
 
     const auto current_sum = sums[idx];
 
     SatWrapper::Clause o;
     o.reserve (2);
-    o.push_back (s_lit);
+    o.push_back (s);
     o.push_back (current_sum);
 
     const auto out = or_clause (o);
 
-    outs[idx] = get_literal (out);
+    outs[idx] = out;
   }
 
   // Overflow
   SatWrapper::Clause overflow_clause;
   overflow_clause.reserve (2);
 
-  overflow_clause.push_back (l);
+  overflow_clause.push_back (v);
   overflow_clause.push_back (sums.back());
 
-  const auto overflow_var = and_clause (overflow_clause);
-  const auto overflow = get_literal (overflow_var);
+  const auto overflow = and_clause (overflow_clause);
 
   return PartialSum (outs, overflow);
 }

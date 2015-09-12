@@ -12,15 +12,21 @@
 class SatWrapper {
   public:
     using Var = Glucose::Var;
-    using Literal = Glucose::Lit;
-    using Clause = std::vector<Literal>;
+
+    using Clause = std::vector<Var>;
     using ClauseConst = const Clause;
+
+    using Literal = Glucose::Lit;
+
     using Solver = Glucose::Solver;
+
     // Sums, overflow
-    using PartialSum = std::pair<SatWrapper::Clause, SatWrapper::Literal>;
+    using PartialSum = std::pair<SatWrapper::Clause, SatWrapper::Var>;
 
     SatWrapper () {
       m_sat = new Solver();
+      // FIXME: skip satidx == 0, hard to use it now
+      get_new_var();
     }
 
     SatWrapper (Solver* s) {
@@ -48,26 +54,42 @@ class SatWrapper {
       return get_solver()->newVar();
     }
 
+    Var negate (const Var v) const {
+      return -v;
+    }
+
     Literal negate (const Literal& l) const {
       return ~l;
     }
 
     Literal get_literal (Var v, bool sign = false) const {
-      return Glucose::mkLit(v, sign);
+      const auto& l = Glucose::mkLit (std::abs(v), sign);
+      return v > 0 ? l : negate (l);
     }
 
     Var get_var (const Literal& l) {
       return Glucose::var(l);
     }
 
-    void add_literal(const Literal& l) {
-      get_solver()->addClause(l);
+    void add_literal (const Var v) {
+      const auto& l = get_literal (v);
+      add_literal (l);
+    }
+
+    void add_literal (const Literal& l) {
+      const bool added = get_solver()->addClause(l);
+      ASSERT (added, "Can't add literal");
     }
 
     void add_clause (const Clause& c) {
-      Vec v(c.size());
-      _get_vec_from_clause(c, v);
-      get_solver()->addClause(v);
+      Vec vec;
+
+      for (const auto v: c) {
+        const auto& l = get_literal (v);
+        vec.push (l);
+      }
+      const bool added = get_solver()->addClause(vec);
+      ASSERT (added, "Can't add clause");
     }
 
     void simplify () {
@@ -107,14 +129,6 @@ class SatWrapper {
 
     Solver* m_sat;
 
-    void _get_vec_from_clause (const Clause& c, Vec& v) const {
-      ASSERT(v.size() == c.size(), "Must be equal");
-
-      for (size_t idx = 0; idx < c.size(); ++idx) {
-        v[idx] = c[idx];
-      }
-    }
-
     Var _sequential_counter (
       ClauseConst& c,
       const size_t lower,
@@ -122,7 +136,7 @@ class SatWrapper {
     );
 
     PartialSum _partialSum (
-      const Literal& l,
+      const Var v,
       ClauseConst& sums
     );
 };
