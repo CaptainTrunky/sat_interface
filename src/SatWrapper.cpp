@@ -10,7 +10,7 @@ SatWrapper::not_clause (ClauseConst& c) {
 
   add_literal (neg);
 
-  return negate (c.front());
+  return c.front();
 }
 
 SatWrapper::Var
@@ -241,20 +241,36 @@ SatWrapper::cardinality_clause (ClauseConst& c,
   return -1;
 }
 
-SatWrapper::Var
+SatWrapper::Clause
+SatWrapper::at_most_clause (ClauseConst& c, const size_t upper) {
+  const auto& counter = _sequential_counter (c, 0, upper);
+
+  const auto& overflows = counter.second;
+
+  for (const auto overflow: overflows) {
+    const auto neg = negate (overflow);
+
+    add_literal (neg);
+  }
+
+  _write_debug_clauses();
+  return counter.first;
+}
+
+SatWrapper::SequentialCounter
 SatWrapper::_sequential_counter (ClauseConst& c,
   const size_t lower,
   const size_t upper) {
-  ASSERT (false, "Not implemented");
-
   ASSERT (not c.empty(), "Can't be empty");
-  ASSERT (c.size() == 1, "Nothing to count");
-  ASSERT (c.size() < lower, "Number of variabels must be greater then lower bound, other way, it is always true");
+  ASSERT (c.size() != 1, "Nothing to count");
+  ASSERT (c.size() > lower, "Number of variables must be greater then lower bound, other way, it is always false");
   ASSERT (c.size() > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
 
-  SatWrapper::Clause current_outs;
+  const auto range = upper - lower;
+  SatWrapper::Clause current_outs(range);
 
   const auto always_zero = get_new_var ();
+
   const auto fake_sums = not_clause (SatWrapper::Clause (1,always_zero));
   std::fill (current_outs.begin(), current_outs.end(), fake_sums);
 
@@ -284,7 +300,7 @@ SatWrapper::_sequential_counter (ClauseConst& c,
     current_outs = tmp.first;
   }
 
-  return -1;
+  return SequentialCounter(current_outs, overflows);
 }
 
 SatWrapper::PartialSum
@@ -302,6 +318,7 @@ SatWrapper::_partialSum (
   sum_1.push_back (v);
 
   const auto s_1 = or_clause (sum_1);
+
   outs[0] = s_1;
 
   // All other sums

@@ -4,6 +4,7 @@
 #include "Journal.hpp"
 
 #include <memory>
+#include <fstream>
 #include <utility>
 #include <vector>
 
@@ -22,6 +23,8 @@ class SatWrapper {
 
     // Sums, overflow
     using PartialSum = std::pair<SatWrapper::Clause, SatWrapper::Var>;
+    // sums, overflows
+    using SequentialCounter = std::pair<SatWrapper::Clause, SatWrapper::Clause>;
 
     SatWrapper () {
       m_sat = new Solver();
@@ -50,6 +53,8 @@ class SatWrapper {
       const size_t upper
     );
 
+    Clause at_most_clause (ClauseConst& c, const size_t upper);
+
     Var get_new_var () {
       return get_solver()->newVar();
     }
@@ -68,7 +73,9 @@ class SatWrapper {
     }
 
     Var get_var (const Literal& l) {
-      return Glucose::var(l);
+      const auto v = Glucose::var(l);
+
+      return Glucose::sign(l) ? -v : v;
     }
 
     void add_literal (const Var v) {
@@ -78,6 +85,9 @@ class SatWrapper {
 
     void add_literal (const Literal& l) {
       const bool added = get_solver()->addClause(l);
+      Clause dbg;
+      dbg.push_back (get_var (l));
+      _add_debug_clause (dbg);
       ASSERT (added, "Can't add literal");
     }
 
@@ -89,6 +99,7 @@ class SatWrapper {
         vec.push (l);
       }
       const bool added = get_solver()->addClause(vec);
+      _add_debug_clause (c);
       ASSERT (added, "Can't add clause");
     }
 
@@ -101,6 +112,14 @@ class SatWrapper {
     }
 
     bool solve (const Literal& asmp) {
+      return m_sat->solve(asmp);
+    }
+
+    bool solve (ClauseConst& c) {
+      Vec asmp;
+      for (const auto v: c) {
+        asmp.push (get_literal (v));
+      }
       return m_sat->solve(asmp);
     }
 
@@ -126,10 +145,31 @@ class SatWrapper {
 
   private:
     using Vec = Glucose::vec<Literal>;
+    using Clauses = std::vector<Clause>;
+
+    Clauses _debug_clauses;
+
+    void _add_debug_clause (ClauseConst& c) {
+      _debug_clauses.push_back(c);
+    }
+
+    void _write_debug_clauses () {
+      std::ofstream out ("./out.dbg");
+
+      out << "p cnf " << 0 << " " << _debug_clauses.size() << std::endl;
+
+      for (const auto& c: _debug_clauses) {
+        for (const auto l: c) {
+          out << l << " ";
+        }
+        out << "0" << std::endl;
+      }
+      out.flush();
+    }
 
     Solver* m_sat;
 
-    Var _sequential_counter (
+    SequentialCounter _sequential_counter (
       ClauseConst& c,
       const size_t lower,
       const size_t upper

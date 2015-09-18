@@ -53,7 +53,7 @@ TEST(TseitinPrimitives, AndOpSat) {
   EXPECT_EQ (true, is_sat);
 }
 
-TEST(TseitinPrimitives, AndOpUnsat) {
+TEST(TseitinPrimitives, AndOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -103,7 +103,7 @@ TEST(TseitinPrimitives, OrOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(TseitinPrimitives, OrOpUnsat) {
+TEST(TseitinPrimitives, OrOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -153,7 +153,7 @@ TEST(TseitinPrimitives, XorOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(TseitinPrimitives, XorOpUnsat) {
+TEST(TseitinPrimitives, XorOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -203,7 +203,7 @@ TEST(TseitinPrimitives, NandOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(TseitinPrimitives, NandOpUnsat) {
+TEST(TseitinPrimitives, NandOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -253,7 +253,7 @@ TEST(TseitinPrimitives, NorOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(TseitinPrimitives, NorOpUnsat) {
+TEST(TseitinPrimitives, NorOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -303,7 +303,7 @@ TEST(TseitinPrimitives, XnorOpSat) {
   EXPECT_EQ(true, is_sat);
 }
 
-TEST(Tseitlrimitives, XnorOpUnsat) {
+TEST(Tseitlrimitives, XnorOpUnSat) {
   SatWrapper sat;
 
   const auto l1 = sat.get_new_var();
@@ -324,6 +324,76 @@ TEST(Tseitlrimitives, XnorOpUnsat) {
   const auto& xnor_gate_on = sat.get_literal(xnor_gate);
 
   const auto is_sat = sat.solve(xnor_gate_on);
+
+  EXPECT_EQ(false, is_sat);
+}
+
+TEST(Cardinality, AtMostTwoSat) {
+  SatWrapper sat;
+
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
+  const auto l3 = sat.get_new_var();
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+  c.push_back(l3);
+
+  const auto& gate = sat.at_most_clause (c, 2);
+
+  SatWrapper::Clause asmp;
+
+  asmp.push_back (l1);
+  asmp.push_back (l2);
+
+  auto is_sat = sat.solve(asmp);
+  EXPECT_EQ(true, is_sat);
+
+  asmp.clear();
+
+  asmp.push_back (l2);
+  asmp.push_back (l3);
+  is_sat = sat.solve(asmp);
+
+  EXPECT_EQ(true, is_sat);
+
+  asmp.clear();
+
+  asmp.push_back (l1);
+  asmp.push_back (l3);
+  is_sat = sat.solve(asmp);
+
+  EXPECT_EQ(true, is_sat);
+}
+
+TEST(Cardinality, AtMostTwoUnSat) {
+  SatWrapper sat;
+
+  const auto l1 = sat.get_new_var();
+  const auto l2 = sat.get_new_var();
+  const auto l3 = sat.get_new_var();
+
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back(l1);
+  c.push_back(l2);
+  c.push_back(l3);
+
+  const auto& gate = sat.at_most_clause (c, 2);
+
+  SatWrapper::Clause asmp;
+
+  asmp.push_back (l1);
+  asmp.push_back (l2);
+  asmp.push_back (l3);
+
+  const auto is_sat = sat.solve(asmp);
 
   EXPECT_EQ(false, is_sat);
 }
