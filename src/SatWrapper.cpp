@@ -1,6 +1,7 @@
 #include "SatWrapper.hpp"
 
 #include <algorithm>
+#include <math.h>
 
 SatWrapper::Var
 SatWrapper::not_clause (ClauseConst& c) {
@@ -269,9 +270,8 @@ SatWrapper::_sequential_counter (ClauseConst& c,
   const auto range = upper - lower;
   SatWrapper::Clause current_outs(range);
 
-  const auto always_zero = get_new_var ();
+  const auto fake_sums = SatWrapper::always_false ();
 
-  const auto fake_sums = not_clause (SatWrapper::Clause (1,always_zero));
   std::fill (current_outs.begin(), current_outs.end(), fake_sums);
 
   SatWrapper::Clause overflows;
@@ -322,7 +322,6 @@ SatWrapper::_partialSum (
   outs[0] = s_1;
 
   // All other sums
-
   for (size_t idx = 1; idx < outs.size(); ++idx) {
     const auto sum_prev = sums[idx-1];
 
@@ -356,5 +355,86 @@ SatWrapper::_partialSum (
   const auto overflow = and_clause (overflow_clause);
 
   return PartialSum (outs, overflow);
+}
+
+void
+SatWrapper::_parallel_counter (
+  ClauseConst& c,
+  const size_t lower,
+  const size_t upper
+) {
+  ASSERT (not c.empty(), "Can't be empty");
+  ASSERT (c.size() != 1, "Nothing to count");
+  ASSERT (c.size() > lower, "Number of variables must be greater then lower bound, other way, it is always false");
+  ASSERT (c.size() > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
+  const auto m = std::floor (
+    std::log2(c.size())
+  );
+
+  const auto inputs_num = static_cast<size_t> (std::pow (2, m));
+
+  const SatWrapper::Clause first (c.begin(), c.begin()+inputs_num);
+
+  _parallel_counter (first,lower,upper);
+
+  const SatWrapper::Clause second (c.begin()+inputs_num, c.end());
+
+  // FIXME: check for corner cases when there just 1 input and no inputs at all
+  if (not second.empty()) {
+    _parallel_counter (second,lower,upper);
+  }
+}
+
+SatWrapper::HalfAdder
+SatWrapper::_half_adder (
+  const SatWrapper::Var a,
+  const SatWrapper::Var b
+  ) {
+  SatWrapper::Clause c;
+
+  c.reserve(2);
+
+  c.push_back (a);
+  c.push_back (b);
+
+  const auto s = xor_clause (c);
+  const auto c_out = and_clause (c);
+
+  return SatWrapper::HalfAdder (s, c_out);
+}
+
+SatWrapper::FullAdder
+SatWrapper::_full_adder (
+  const SatWrapper::Var a,
+  const SatWrapper::Var b,
+  const SatWrapper::Var c_in
+  ) {
+  SatWrapper::Clause c;
+
+  c.reserve (2);
+
+  c.push_back (a);
+  c.push_back (b);
+
+  const auto xor_gate = xor_clause (c);
+  const auto ab_and_gate = and_clause (c);
+
+  c.clear();
+
+  c.push_back (xor_gate);
+  c.push_back (c_in);
+
+  const auto s = xor_clause (c);
+
+  const auto xor_c_in_and_gate = and_clause (c);
+
+  c.clear();
+
+  c.push_back (xor_c_in_and_gate);
+  c.push_back (ab_and_gate);
+
+  const auto c_out = or_clause (c);
+
+  return SatWrapper::FullAdder(s, c_out);
 }
 

@@ -1,26 +1,22 @@
 cmake_minimum_required (VERSION 3.2.2)
 
-function (gtests_init)
-  set (vendor_dir "${CMAKE_SOURCE_DIR}/vendor")
-  set (gtest_dir "${vendor_dir}/gtest")
+include (ExternalProject)
 
-  if (NOT EXISTS ${gtest_dir})
-    message ("Adding googletests lib...")
+# Download and install GoogleTest
+ExternalProject_Add (
+  cppcheck
+  GIT_REPOSITORY git://github.com/danmar/cppcheck.git
+  PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cppcheck
+  BUILD_COMMAND "make" "SRCDIR=build" "CFGDIR=vendor/cppcheck/src/cppcheck/cfg/" "HAVE_RULES=yes"
+  # Disable install step
+  INSTALL_COMMAND ""
+)
 
-    set (git_cmd "git")
-    set (git_clone "clone")
-    set (gtest_url "https://github.com/CaptainTrunky/googletest.git")
-
-    set (git_gtest "${gtest_url} ${gtest_dir}")
-    message (STATUS "git cmd: ${git_cmd} ${git_clone} ${git_gtest} ${gtest_url} ${gtest_dir}")
-    execute_process ( COMMAND ${git_cmd} ${git_clone} ${gtest_url} ${gtest_dir} RESULT_VARIABLE git_result)
-    message (STATUS "git: ${git_result}")
-  endif (NOT EXISTS ${gtest_dir})
-
-  set (gtest_bin ${gtest_dir}/lib)
-
-  add_subdirectory (${gtest_dir} ${gtest_bin})
-endfunction (gtests_init)
+ExternalProject_Get_Property (cppcheck source_dir binary_dir)
+add_custom_target (
+  run_cppcheck
+  COMMAND "${binary_dir}/bin/cppcheck" "${CMAKE_CURRENT_SOURCE_DIR}/src/"
+)
 
 set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic -fpic")
 
@@ -28,11 +24,15 @@ set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 
 set (CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -march=native -funroll-loops -fomit-frame-pointer")
 
-gtests_init ()
+set (tools ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+set (glucose_dir ${tools}/glucose-syrup)
 
-add_subdirectory (${CMAKE_SOURCE_DIR}/tests ${CMAKE_SOURCE_DIR}/tests/bin)
+include_directories (include ${glucose_dir})
 
-include_directories (include vendor/glucose/glucose-syrup)
+set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+add_library (sat_interface SHARED src/SatWrapper.cpp ${glucose_dir}/simp/SimpSolver.cc ${glucose_dir}/core/Solver.cc)
 
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)
-add_library (sat_interface SHARED src/SatWrapper.cpp ../glucose/glucose-syrup/simp/SimpSolver.o ../glucose/glucose-syrup/core/Solver.o)
+add_subdirectory (${CMAKE_CURRENT_SOURCE_DIR}/tests ${CMAKE_CURRENT_SOURCE_DIR}/tests/bin)
+
+enable_testing ()
+add_test (name run_test command run_test)

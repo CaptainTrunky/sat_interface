@@ -26,10 +26,22 @@ class SatWrapper {
     // sums, overflows
     using SequentialCounter = std::pair<SatWrapper::Clause, SatWrapper::Clause>;
 
+    // Sum, carry
+    using HalfAdder = std::pair<SatWrapper::Var, SatWrapper::Var>;
+    using FullAdder = std::pair<SatWrapper::Var, SatWrapper::Var>;
+
     SatWrapper () {
       m_sat = new Solver();
       // FIXME: skip satidx == 0, hard to use it now
       get_new_var();
+
+      // skip ids for always_true/false constants
+      get_new_var ();
+      get_new_var ();
+
+      // setup constants
+      add_literal (SatWrapper::always_true ());
+      add_literal (negate(SatWrapper::always_false ()));
     }
 
     SatWrapper (Solver* s) {
@@ -149,13 +161,21 @@ class SatWrapper {
 
     Clauses _debug_clauses;
 
+    static constexpr Var always_true () {
+      return 1;
+    };
+
+    static constexpr Var always_false () {
+      return 2;
+    };
+
     void _add_debug_clause (ClauseConst& c) {
       _debug_clauses.push_back(c);
     }
 
     void _write_debug_clauses () {
       std::ofstream out ("./out.dbg");
-
+      // FIXME: replace 0 vars with actual var num
       out << "p cnf " << 0 << " " << _debug_clauses.size() << std::endl;
 
       for (const auto& c: _debug_clauses) {
@@ -178,6 +198,23 @@ class SatWrapper {
     PartialSum _partialSum (
       const Var v,
       ClauseConst& sums
+    );
+
+    void _parallel_counter (
+      ClauseConst& c,
+      const size_t lower,
+      const size_t upper
+    );
+
+    SatWrapper::HalfAdder _half_adder (
+      const SatWrapper::Var a,
+      const SatWrapper::Var b
+    );
+
+    SatWrapper::FullAdder _full_adder (
+      const SatWrapper::Var a,
+      const SatWrapper::Var b,
+      const SatWrapper::Var c_in
     );
 };
 #endif // SAT_WRAPPER_HPP

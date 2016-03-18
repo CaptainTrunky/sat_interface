@@ -25,7 +25,7 @@ TEST (Basic, AddClause) {
   sat.add_clause (c);
   EXPECT_EQ (2, sat.get_solver()->nClauses());
 
-  EXPECT_EQ (5, sat.get_solver()->nVars());
+  EXPECT_EQ (7, sat.get_solver()->nVars());
 }
 
 TEST(TseitinPrimitives, AndOpSat) {
