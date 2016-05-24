@@ -18,7 +18,7 @@ add_custom_target (
   COMMAND "${binary_dir}/bin/cppcheck" "${CMAKE_CURRENT_SOURCE_DIR}/src/"
 )
 
-set (CMAKE_CXX_FLAGS "-std=c++11 -Wall -pedantic -fpic")
+set (CMAKE_CXX_FLAGS "-std=c++14 -Wall -pedantic -fpic")
 
 set (CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -g -O0")
 

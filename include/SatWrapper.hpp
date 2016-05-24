@@ -20,6 +20,7 @@ class SatWrapper {
     using Literal = Glucose::Lit;
 
     using Solver = Glucose::Solver;
+    using SolverPtr = std::unique_ptr<Solver>;
 
     // Sums, overflow
     using PartialSum = std::pair<SatWrapper::Clause, SatWrapper::Var>;
@@ -31,7 +32,8 @@ class SatWrapper {
     using FullAdder = std::pair<SatWrapper::Var, SatWrapper::Var>;
 
     SatWrapper () {
-      m_sat = new Solver();
+      m_sat = std::make_unique <Solver> ();
+
       // FIXME: skip satidx == 0, hard to use it now
       get_new_var();
 
@@ -45,12 +47,10 @@ class SatWrapper {
     }
 
     SatWrapper (Solver* s) {
-      m_sat = s;
+      m_sat.reset (s);
     }
 
-    ~SatWrapper () {
-      delete m_sat;
-    }
+    ~SatWrapper () {}
 
     Var not_clause (ClauseConst& c);
     Var and_clause (ClauseConst& c);
@@ -85,7 +85,7 @@ class SatWrapper {
     }
 
     Var get_var (const Literal& l) {
-      const auto v = Glucose::var(l);
+      const auto v = Glucose::var (l);
 
       return Glucose::sign(l) ? -v : v;
     }
@@ -143,11 +143,11 @@ class SatWrapper {
 
     }
 
-    Solver* get_solver () {
+    SolverPtr& get_solver () {
       return m_sat;
     }
 
-    const Solver* get_solver () const {
+    const SolverPtr& get_solver () const {
       return m_sat;
     }
 
@@ -187,7 +187,7 @@ class SatWrapper {
       out.flush();
     }
 
-    Solver* m_sat;
+    SolverPtr m_sat;
 
     SequentialCounter _sequential_counter (
       ClauseConst& c,
