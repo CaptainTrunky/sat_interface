@@ -11,7 +11,7 @@ SatWrapper::not_clause (ClauseConst& c) {
 
   add_literal (neg);
 
-  return c.front();
+  return c.front ();
 }
 
 SatWrapper::Var
@@ -19,11 +19,11 @@ SatWrapper::and_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
   Clause base;
-  base.reserve(c.size() + 1);
+  base.reserve (c.size () + 1);
 
   base.push_back(gate);
   for (const auto& l: c) {
-    base.push_back(negate(l));
+    base.push_back (negate (l));
   }
 
   add_clause(base);
@@ -32,14 +32,14 @@ SatWrapper::and_clause (ClauseConst& c) {
 
   Clause tail;
   for (const auto& l: c) {
-    tail.reserve(2);
+    tail.reserve (2);
 
-    tail.push_back(neg_gate);
-    tail.push_back(l);
+    tail.push_back (neg_gate);
+    tail.push_back (l);
 
     add_clause (tail);
 
-    tail.clear();
+    tail.clear ();
   }
   return gate;
 }
@@ -48,28 +48,28 @@ SatWrapper::Var
 SatWrapper::or_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto neg_gate = negate(gate);
+  const auto neg_gate = negate (gate);
 
   Clause base;
-  base.reserve(c.size() + 1);
+  base.reserve (c.size() + 1);
 
-  base.push_back(neg_gate);
+  base.push_back (neg_gate);
   for (const auto& l: c) {
-    base.push_back(l);
+    base.push_back (l);
   }
 
-  add_clause(base);
+  add_clause (base);
 
   Clause tail;
   for (const auto& l: c) {
-    tail.reserve(2);
+    tail.reserve (2);
 
-    tail.push_back(gate);
-    tail.push_back(negate(l));
+    tail.push_back (gate);
+    tail.push_back (negate (l));
 
     add_clause (tail);
 
-    tail.clear();
+    tail.clear ();
   }
   return gate;
 }
@@ -81,25 +81,25 @@ SatWrapper::nand_clause (ClauseConst& c) {
   const auto neg_gate = negate(gate);
 
   Clause base;
-  base.reserve(c.size() + 1);
+  base.reserve (c.size () + 1);
 
-  base.push_back(neg_gate);
+  base.push_back (neg_gate);
   for (const auto& l: c) {
-    base.push_back(negate(l));
+    base.push_back (negate( l));
   }
 
-  add_clause(base);
+  add_clause (base);
 
   Clause tail;
   for (const auto& l: c) {
-    tail.reserve(2);
+    tail.reserve (2);
 
-    tail.push_back(gate);
-    tail.push_back(l);
+    tail.push_back (gate);
+    tail.push_back (l);
 
     add_clause (tail);
 
-    tail.clear();
+    tail.clear ();
   }
   return gate;
 }
@@ -108,128 +108,128 @@ SatWrapper::Var
 SatWrapper::nor_clause (ClauseConst& c) {
   const auto gate = get_new_var ();
 
-  const auto neg_gate = negate(gate);
+  const auto neg_gate = negate (gate);
 
   Clause base;
-  base.reserve(c.size() + 1);
+  base.reserve (c.size() + 1);
 
-  base.push_back(gate);
+  base.push_back (gate);
   for (const auto& l: c) {
-    base.push_back(l);
+    base.push_back (l);
   }
 
-  add_clause(base);
+  add_clause (base);
 
   Clause tail;
   for (const auto& l: c) {
-    tail.reserve(2);
+    tail.reserve (2);
 
-    tail.push_back(neg_gate);
-    tail.push_back(negate(l));
+    tail.push_back (neg_gate);
+    tail.push_back (negate (l));
 
     add_clause (tail);
 
-    tail.clear();
+    tail.clear ();
   }
   return gate;
 }
 
 SatWrapper::Var
 SatWrapper::xor_clause (ClauseConst& c) {
-  ASSERT(c.size() == 2, "Must contain 2 elements, use XOR gate literals to deal with set of variables");
+  ASSERT(c.size () == 2, "Must contain 2 elements, use XOR gate literals to deal with set of variables");
 
-  const auto gate = get_new_var();
+  const auto gate = get_new_var ();
 
-  const auto& not_gate = negate(gate);
+  const auto& not_gate = negate (gate);
 
-  const auto& l1 = c.front();
-  const auto& l2 = c.back();
+  const auto& l1 = c.front ();
+  const auto& l2 = c.back ();
 
-  const auto& neg_l1 = negate(l1);
-  const auto& neg_l2 = negate(l2);
+  const auto& neg_l1 = negate (l1);
+  const auto& neg_l2 = negate (l2);
 
   Clause tmp;
-  tmp.reserve(3);
+  tmp.reserve (3);
 
-  tmp.push_back(not_gate);
-  tmp.push_back(l1);
-  tmp.push_back(l2);
+  tmp.push_back (not_gate);
+  tmp.push_back (l1);
+  tmp.push_back (l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(not_gate);
-  tmp.push_back(neg_l1);
-  tmp.push_back(neg_l2);
+  tmp.push_back (not_gate);
+  tmp.push_back (neg_l1);
+  tmp.push_back (neg_l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(gate);
-  tmp.push_back(l1);
-  tmp.push_back(neg_l2);
+  tmp.push_back (gate);
+  tmp.push_back (l1);
+  tmp.push_back (neg_l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(gate);
-  tmp.push_back(neg_l1);
-  tmp.push_back(l2);
+  tmp.push_back (gate);
+  tmp.push_back (neg_l1);
+  tmp.push_back (l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
   return gate;
 }
 
 SatWrapper::Var
 SatWrapper::xnor_clause (ClauseConst& c) {
-  ASSERT(c.size() == 2, "Must contain 2 elements, use XNOR gate literals to deal with set of variables");
+  ASSERT(c.size () == 2, "Must contain 2 elements, use XNOR gate literals to deal with set of variables");
 
-  const auto gate = get_new_var();
+  const auto gate = get_new_var ();
 
-  const auto& not_gate = negate(gate);
+  const auto& not_gate = negate (gate);
 
-  const auto& l1 = c.front();
-  const auto& l2 = c.back();
+  const auto& l1 = c.front ();
+  const auto& l2 = c.back ();
 
-  const auto& neg_l1 = negate(l1);
-  const auto& neg_l2 = negate(l2);
+  const auto& neg_l1 = negate (l1);
+  const auto& neg_l2 = negate (l2);
 
   Clause tmp;
-  tmp.reserve(3);
+  tmp.reserve (3);
 
-  tmp.push_back(gate);
-  tmp.push_back(l1);
-  tmp.push_back(l2);
+  tmp.push_back (gate);
+  tmp.push_back (l1);
+  tmp.push_back (l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(gate);
-  tmp.push_back(neg_l1);
-  tmp.push_back(neg_l2);
+  tmp.push_back (gate);
+  tmp.push_back (neg_l1);
+  tmp.push_back (neg_l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(not_gate);
-  tmp.push_back(l1);
-  tmp.push_back(neg_l2);
+  tmp.push_back (not_gate);
+  tmp.push_back (l1);
+  tmp.push_back (neg_l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
-  tmp.clear();
+  tmp.clear ();
 
-  tmp.push_back(not_gate);
-  tmp.push_back(neg_l1);
-  tmp.push_back(l2);
+  tmp.push_back (not_gate);
+  tmp.push_back (neg_l1);
+  tmp.push_back (l2);
 
-  add_clause(tmp);
+  add_clause (tmp);
 
   return gate;
 }
@@ -238,7 +238,7 @@ SatWrapper::Var
 SatWrapper::cardinality_clause (ClauseConst& c,
   const size_t lower,
   const size_t upper) {
-  ASSERT(false, "Not implemented");
+  ASSERT (false, "Not implemented");
   return -1;
 }
 
@@ -254,7 +254,7 @@ SatWrapper::at_most_clause (ClauseConst& c, const size_t upper) {
     add_literal (neg);
   }
 
-  _write_debug_clauses();
+  _write_debug_clauses ();
   return counter.first;
 }
 
@@ -262,24 +262,24 @@ SatWrapper::SequentialCounter
 SatWrapper::_sequential_counter (ClauseConst& c,
   const size_t lower,
   const size_t upper) {
-  ASSERT (not c.empty(), "Can't be empty");
-  ASSERT (c.size() != 1, "Nothing to count");
-  ASSERT (c.size() > lower, "Number of variables must be greater then lower bound, other way, it is always false");
-  ASSERT (c.size() > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
+  ASSERT (not c.empty (), "Can't be empty");
+  ASSERT (c.size () != 1, "Nothing to count");
+  ASSERT (c.size () > lower, "Number of variables must be greater then lower bound, other way, it is always false");
+  ASSERT (c.size () > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
 
   const auto range = upper - lower;
-  SatWrapper::Clause current_outs(range);
+  SatWrapper::Clause current_outs (range);
 
   const auto fake_sums = SatWrapper::always_false ();
 
-  std::fill (current_outs.begin(), current_outs.end(), fake_sums);
+  std::fill (current_outs.begin (), current_outs.end (), fake_sums);
 
   SatWrapper::Clause overflows;
-  overflows.reserve (c.size());
+  overflows.reserve (c.size ());
 
   // Compute zero step partial sum
   const auto& zero_step = _partialSum (
-    c.front(),
+    c.front (),
     current_outs
   );
 
@@ -287,8 +287,8 @@ SatWrapper::_sequential_counter (ClauseConst& c,
 
   overflows.push_back (zero_step.second);
 
-  for (size_t idx = 1; idx < c.size(); ++idx) {
-    const auto& l = c[idx];
+  for (size_t idx = 1; idx < c.size (); ++idx) {
+    const auto& l = c [idx];
 
     const auto& tmp = _partialSum (
       l,
@@ -300,7 +300,7 @@ SatWrapper::_sequential_counter (ClauseConst& c,
     current_outs = tmp.first;
   }
 
-  return SequentialCounter(current_outs, overflows);
+  return SequentialCounter (current_outs, overflows);
 }
 
 SatWrapper::PartialSum
@@ -308,22 +308,22 @@ SatWrapper::_partialSum (
   const SatWrapper::Var v,
   const SatWrapper::Clause& sums) {
   SatWrapper::Clause outs;
-  outs.resize (sums.size());
+  outs.resize (sums.size ());
 
   // sum_1
   SatWrapper::Clause sum_1;
 
   sum_1.reserve (2);
-  sum_1.push_back (sums.front());
+  sum_1.push_back (sums.front ());
   sum_1.push_back (v);
 
   const auto s_1 = or_clause (sum_1);
 
-  outs[0] = s_1;
+  outs [0] = s_1;
 
   // All other sums
-  for (size_t idx = 1; idx < outs.size(); ++idx) {
-    const auto sum_prev = sums[idx-1];
+  for (size_t idx = 1; idx < outs.size (); ++idx) {
+    const auto sum_prev = sums [idx-1];
 
     SatWrapper::Clause a;
     a.reserve (2);
@@ -333,7 +333,7 @@ SatWrapper::_partialSum (
 
     const auto s = and_clause (a);
 
-    const auto current_sum = sums[idx];
+    const auto current_sum = sums [idx];
 
     SatWrapper::Clause o;
     o.reserve (2);
@@ -342,7 +342,7 @@ SatWrapper::_partialSum (
 
     const auto out = or_clause (o);
 
-    outs[idx] = out;
+    outs [idx] = out;
   }
 
   // Overflow
@@ -350,7 +350,7 @@ SatWrapper::_partialSum (
   overflow_clause.reserve (2);
 
   overflow_clause.push_back (v);
-  overflow_clause.push_back (sums.back());
+  overflow_clause.push_back (sums.back ());
 
   const auto overflow = and_clause (overflow_clause);
 
@@ -363,25 +363,25 @@ SatWrapper::_parallel_counter (
   const size_t lower,
   const size_t upper
 ) {
-  ASSERT (not c.empty(), "Can't be empty");
-  ASSERT (c.size() != 1, "Nothing to count");
-  ASSERT (c.size() > lower, "Number of variables must be greater then lower bound, other way, it is always false");
-  ASSERT (c.size() > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
+  ASSERT (not c.empty (), "Can't be empty");
+  ASSERT (c.size () != 1, "Nothing to count");
+  ASSERT (c.size () > lower, "Number of variables must be greater then lower bound, other way, it is always false");
+  ASSERT (c.size () > upper, "Number of variables must be lesser then upper bound, other way, it is always true");
   const auto m = std::floor (
-    std::log2(c.size())
+    std::log2 (c.size ())
   );
 
   const auto inputs_num = static_cast<size_t> (std::pow (2, m));
 
-  const SatWrapper::Clause first (c.begin(), c.begin()+inputs_num);
+  const SatWrapper::Clause first (c.begin (), c.begin () + inputs_num);
 
-  _parallel_counter (first,lower,upper);
+  _parallel_counter (first, lower, upper);
 
-  const SatWrapper::Clause second (c.begin()+inputs_num, c.end());
+  const SatWrapper::Clause second (c.begin () + inputs_num, c.end ());
 
   // FIXME: check for corner cases when there just 1 input and no inputs at all
-  if (not second.empty()) {
-    _parallel_counter (second,lower,upper);
+  if (not second.empty ()) {
+    _parallel_counter (second, lower, upper);
   }
 }
 
@@ -392,7 +392,7 @@ SatWrapper::_half_adder (
   ) {
   SatWrapper::Clause c;
 
-  c.reserve(2);
+  c.reserve (2);
 
   c.push_back (a);
   c.push_back (b);
@@ -419,7 +419,7 @@ SatWrapper::_full_adder (
   const auto xor_gate = xor_clause (c);
   const auto ab_and_gate = and_clause (c);
 
-  c.clear();
+  c.clear ();
 
   c.push_back (xor_gate);
   c.push_back (c_in);
@@ -428,7 +428,7 @@ SatWrapper::_full_adder (
 
   const auto xor_c_in_and_gate = and_clause (c);
 
-  c.clear();
+  c.clear ();
 
   c.push_back (xor_c_in_and_gate);
   c.push_back (ab_and_gate);

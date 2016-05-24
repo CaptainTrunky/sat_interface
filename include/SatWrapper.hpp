@@ -35,7 +35,7 @@ class SatWrapper {
       m_sat = std::make_unique <Solver> ();
 
       // FIXME: skip satidx == 0, hard to use it now
-      get_new_var();
+      get_new_var ();
 
       // skip ids for always_true/false constants
       get_new_var ();
@@ -80,14 +80,14 @@ class SatWrapper {
     }
 
     Literal get_literal (Var v, bool sign = false) const {
-      const auto& l = Glucose::mkLit (std::abs(v), sign);
+      const auto& l = Glucose::mkLit (std::abs (v), sign);
       return v > 0 ? l : negate (l);
     }
 
     Var get_var (const Literal& l) {
       const auto v = Glucose::var (l);
 
-      return Glucose::sign(l) ? -v : v;
+      return Glucose::sign (l) ? -v : v;
     }
 
     void add_literal (const Var v) {
@@ -96,7 +96,7 @@ class SatWrapper {
     }
 
     void add_literal (const Literal& l) {
-      const bool added = get_solver()->addClause(l);
+      const bool added = get_solver ()->addClause (l);
       Clause dbg;
       dbg.push_back (get_var (l));
       _add_debug_clause (dbg);
@@ -110,21 +110,21 @@ class SatWrapper {
         const auto& l = get_literal (v);
         vec.push (l);
       }
-      const bool added = get_solver()->addClause(vec);
+      const bool added = get_solver ()->addClause (vec);
       _add_debug_clause (c);
       ASSERT (added, "Can't add clause");
     }
 
     void simplify () {
-      m_sat->simplify();
+      m_sat->simplify ();
     }
 
     bool solve () {
-      return m_sat->solve();
+      return m_sat->solve ();
     }
 
     bool solve (const Literal& asmp) {
-      return m_sat->solve(asmp);
+      return m_sat->solve (asmp);
     }
 
     bool solve (ClauseConst& c) {
@@ -132,7 +132,7 @@ class SatWrapper {
       for (const auto v: c) {
         asmp.push (get_literal (v));
       }
-      return m_sat->solve(asmp);
+      return m_sat->solve (asmp);
     }
 
     void get_model () const {
@@ -152,7 +152,7 @@ class SatWrapper {
     }
 
     void write_dimacs (const std::string& filename) {
-      get_solver()->toDimacs(filename.c_str());
+      get_solver()->toDimacs (filename.c_str ());
     }
 
   private:
@@ -170,13 +170,13 @@ class SatWrapper {
     };
 
     void _add_debug_clause (ClauseConst& c) {
-      _debug_clauses.push_back(c);
+      _debug_clauses.push_back (c);
     }
 
     void _write_debug_clauses () {
       std::ofstream out ("./out.dbg");
       // FIXME: replace 0 vars with actual var num
-      out << "p cnf " << 0 << " " << _debug_clauses.size() << std::endl;
+      out << "p cnf " << 0 << " " << _debug_clauses.size () << std::endl;
 
       for (const auto& c: _debug_clauses) {
         for (const auto l: c) {
